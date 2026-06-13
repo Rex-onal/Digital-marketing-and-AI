@@ -70,7 +70,7 @@
 .resourceItem {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 1rem;
   background-color: var(--bg-white);
@@ -79,6 +79,8 @@
   text-decoration: none;
   min-height: 48px; /* Touch target 44px+ */
   transition: all 0.5s ease-in-out;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 .resourceItem:hover {
@@ -89,26 +91,33 @@
 .resourceMeta {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 1rem;
+  flex: 1;
+  min-width: 0;
 }
 
 .resourceText {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .resourceTitle {
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: 1rem;
   color: var(--text-dark);
   margin: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .resourceType {
   font-size: 0.75rem;
   color: var(--text-muted);
-  margin-top: 0.125rem;
+  margin-top: 0.25rem;
 }
 
 /* Quiz block (F1F5F9 background) */
@@ -459,12 +468,17 @@
     margin-bottom: 2rem;
   }
   .resourceItem {
-    flex-direction: column;
+    flex-direction: row;
     align-items: flex-start;
     gap: 0.75rem;
+    overflow: hidden;
   }
   .resourceMeta {
-    width: 100%;
+    width: auto;
+    flex: 1;
+  }
+  .resourceTitle {
+    font-size: 0.875rem;
   }
   .quizPanel {
     padding: 1rem;
