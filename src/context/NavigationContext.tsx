@@ -1,10 +1,19 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-const NavigationContext = createContext(null);
+export interface NavigationContextType {
+  currentRoute: string;
+  navigate: (route: string) => void;
+  goBack: () => void;
+}
 
-export function NavigationProvider({ children }) {
-  // Try to read initial path from browser history on load, otherwise fallback to '/'
-  const getInitialRoute = () => {
+const NavigationContext = createContext<NavigationContextType | null>(null);
+
+interface NavigationProviderProps {
+  children: ReactNode;
+}
+
+export function NavigationProvider({ children }: NavigationProviderProps) {
+  const getInitialRoute = (): string => {
     if (typeof window !== 'undefined' && window.location) {
       const path = window.location.pathname;
       return path === '/' ? '/' : path;
@@ -12,12 +21,11 @@ export function NavigationProvider({ children }) {
     return '/';
   };
 
-  const [currentRoute, setCurrentRoute] = useState(getInitialRoute);
+  const [currentRoute, setCurrentRoute] = useState<string>(getInitialRoute);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Handle browser back/forward buttons
     const handlePopState = () => {
       setCurrentRoute(window.location.pathname);
     };
@@ -26,7 +34,7 @@ export function NavigationProvider({ children }) {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const navigate = (route) => {
+  const navigate = (route: string) => {
     setCurrentRoute(route);
     if (typeof window !== 'undefined' && window.history) {
       window.history.pushState({}, '', route);
@@ -34,7 +42,6 @@ export function NavigationProvider({ children }) {
   };
 
   const goBack = () => {
-    // Basic back navigation fallback
     if (currentRoute.startsWith('/section-')) {
       navigate('/');
     } else {
@@ -44,7 +51,7 @@ export function NavigationProvider({ children }) {
     }
   };
 
-  const value = {
+  const value: NavigationContextType = {
     currentRoute,
     navigate,
     goBack

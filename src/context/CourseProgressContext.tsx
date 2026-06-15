@@ -1,8 +1,28 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-const CourseProgressContext = createContext(null);
+export interface ProgressState {
+  completedSections: string[];
+  quizScores: Record<string, number>;
+  exerciseSubmissions: Record<string, string>;
+  currentSection: string;
+  isCourseFinished: boolean;
+}
 
-const SECTIONS_ORDER = [
+export interface CourseProgressContextType {
+  progress: ProgressState;
+  unlockAll: boolean;
+  isSectionUnlocked: (sectionId: string) => boolean;
+  completeSection: (sectionId: string) => void;
+  submitQuizScore: (sectionId: string, score: number) => void;
+  submitExerciseResponse: (sectionId: string, response: string) => void;
+  markCourseFinished: () => void;
+  resetProgress: () => void;
+  toggleUnlockAll: () => void;
+}
+
+const CourseProgressContext = createContext<CourseProgressContextType | null>(null);
+
+export const SECTIONS_ORDER = [
   'section-1',
   'section-2',
   'section-3',
@@ -10,7 +30,7 @@ const SECTIONS_ORDER = [
   'section-5'
 ];
 
-const defaultState = {
+const defaultState: ProgressState = {
   completedSections: [],
   quizScores: {},
   exerciseSubmissions: {},
@@ -18,57 +38,60 @@ const defaultState = {
   isCourseFinished: false
 };
 
-// Isolated Storage Wrapper (so React Native can easily replace it with AsyncStorage)
 const storage = {
-  getItem: (key) => {
+  getItem: (key: string): string | null => {
     if (typeof window !== 'undefined' && window.localStorage) {
       return localStorage.getItem(key);
     }
     return null;
   },
-  setItem: (key, value) => {
+  setItem: (key: string, value: string): void => {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.setItem(key, value);
     }
   },
-  removeItem: (key) => {
+  removeItem: (key: string): void => {
     if (typeof window !== 'undefined' && window.localStorage) {
       localStorage.removeItem(key);
     }
   }
 };
 
-export function CourseProgressProvider({ children }) {
-  const [progress, setProgress] = useState(() => {
+interface CourseProgressProviderProps {
+  children: ReactNode;
+}
+
+export function CourseProgressProvider({ children }: CourseProgressProviderProps) {
+  const [progress, setProgress] = useState<ProgressState>(() => {
     const data = storage.getItem('dm_ai_progress');
     if (!data) return defaultState;
     try {
-      return JSON.parse(data);
+      return JSON.parse(data) as ProgressState;
     } catch (e) {
       return defaultState;
     }
   });
 
-  const [unlockAll, setUnlockAll] = useState(() => {
+  const [unlockAll, setUnlockAll] = useState<boolean>(() => {
     return storage.getItem('dm_ai_unlock_all') === 'true';
   });
 
-  const saveProgress = (newProgress) => {
+  const saveProgress = (newProgress: ProgressState) => {
     setProgress(newProgress);
     storage.setItem('dm_ai_progress', JSON.stringify(newProgress));
   };
 
-  const isSectionUnlocked = (sectionId) => {
+  const isSectionUnlocked = (sectionId: string): boolean => {
     if (unlockAll) return true;
     
     const index = SECTIONS_ORDER.indexOf(sectionId);
-    if (index === 0) return true; // First section is always unlocked
+    if (index === 0) return true;
 
     const prevSectionId = SECTIONS_ORDER[index - 1];
     return progress.completedSections.includes(prevSectionId);
   };
 
-  const completeSection = (sectionId) => {
+  const completeSection = (sectionId: string) => {
     const newCompleted = [...progress.completedSections];
     if (!newCompleted.includes(sectionId)) {
       newCompleted.push(sectionId);
@@ -87,7 +110,7 @@ export function CourseProgressProvider({ children }) {
     });
   };
 
-  const submitQuizScore = (sectionId, score) => {
+  const submitQuizScore = (sectionId: string, score: number) => {
     const newScores = { ...progress.quizScores, [sectionId]: score };
     saveProgress({
       ...progress,
@@ -95,7 +118,7 @@ export function CourseProgressProvider({ children }) {
     });
   };
 
-  const submitExerciseResponse = (sectionId, response) => {
+  const submitExerciseResponse = (sectionId: string, response: string) => {
     const newSubmissions = { ...progress.exerciseSubmissions, [sectionId]: response };
     saveProgress({
       ...progress,
@@ -124,7 +147,7 @@ export function CourseProgressProvider({ children }) {
     storage.setItem('dm_ai_unlock_all', String(target));
   };
 
-  const value = {
+  const value: CourseProgressContextType = {
     progress,
     unlockAll,
     isSectionUnlocked,
@@ -150,4 +173,3 @@ export function useCourseProgress() {
   }
   return context;
 }
-export { SECTIONS_ORDER };

@@ -1,6 +1,6 @@
-// Learning Path Curriculum Content Data
+import type { SectionsData } from '@/features/curriculum/types';
 
-export const SECTIONS_DATA = {
+export const SECTIONS_DATA: SectionsData = {
   'section-1': {
     id: 'section-1',
     number: '01',
@@ -271,7 +271,7 @@ export const SECTIONS_DATA = {
         },
         {
           question: "Which content format is specifically optimized for swipeable, multi-slide visual guides on platforms like Instagram and LinkedIn?",
-          options: ["Standard single image", "Audio podcast", "Carousel", "Video short"],
+          options: ["Standard single image", "Audio shadow podcast", "Carousel", "Video short"],
           answer: 2,
           explanation: "Carousels allow readers to swipe through consecutive slides, making them highly effective for step-by-step visual tutorials."
         },
@@ -375,4 +375,5 @@ export const SECTIONS_DATA = {
     }
   }
 };
+
 export default SECTIONS_DATA;
